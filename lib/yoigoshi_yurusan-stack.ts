@@ -1,16 +1,19 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { EC2Resource } from './resources/ec2';
+import { IamResources } from './resources/iam';
+import { LambdaResources } from './resources/lambda';
 
 export class YoigoshiYurusanStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-
-    // The code that defines your stack goes here
-
-    // example resource
-    // const queue = new sqs.Queue(this, 'YoigoshiYurusanQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    const iamResources = new IamResources(this);
+    const lambdaRole = iamResources.createResources();
+    const lambdaResources = new LambdaResources(this, {
+      role: lambdaRole,
+    });
+    lambdaResources.createResources();
+    const sampleEC2 = new EC2Resource(this);
+    sampleEC2.createEC2();
   }
 }
