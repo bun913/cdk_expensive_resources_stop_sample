@@ -1,19 +1,17 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { EC2Resource } from './resources/ec2';
-import { IamResources } from './resources/iam';
-import { LambdaResources } from './resources/lambda';
+import { NetworkResource } from './resources/network';
+import { RDSResource } from './resources/rds';
 
 export class YoigoshiYurusanStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
-    const iamResources = new IamResources(this);
-    const lambdaRole = iamResources.createResources();
-    const lambdaResources = new LambdaResources(this, {
-      role: lambdaRole,
-    });
-    lambdaResources.createResources();
-    const sampleEC2 = new EC2Resource(this);
+    const network = new NetworkResource(this);
+    const vpc = network.createVpc();
+    const sampleEC2 = new EC2Resource(this, vpc);
     sampleEC2.createEC2();
+    const db = new RDSResource(this, vpc);
+    const rdsInstance = db.createDBInstance();
   }
 }
