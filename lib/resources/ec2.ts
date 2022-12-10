@@ -6,39 +6,30 @@ import {
   InstanceClass,
   InstanceSize,
   InstanceType,
-  SubnetType,
   Vpc,
 } from 'aws-cdk-lib/aws-ec2';
 import { Construct } from 'constructs';
 
 export class EC2Resource {
   readonly construct: Construct;
+  readonly vpc: Vpc;
 
-  constructor(construct: Construct) {
+  constructor(construct: Construct, vpc: Vpc) {
     this.construct = construct;
+    this.vpc = vpc;
   }
 
   public createEC2() {
-    const vpc = new Vpc(this.construct, 'Vpc', {
-      cidr: '10.100.0.0/16',
-      maxAzs: 2,
-      natGateways: 0,
-      subnetConfiguration: [
-        {
-          cidrMask: 24,
-          name: 'isolated',
-          subnetType: SubnetType.PRIVATE_ISOLATED,
-        },
-      ],
-    });
     const ami = new AmazonLinuxImage({
       generation: AmazonLinuxGeneration.AMAZON_LINUX_2,
       cpuType: AmazonLinuxCpuType.X86_64,
     });
-    const ec2 = new Instance(this.construct, 'sampleInstance', {
-      vpc: vpc,
-      instanceType: InstanceType.of(InstanceClass.T2, InstanceSize.MICRO),
-      machineImage: ami,
+    ['sample1', 'sample2'].forEach((id) => {
+      new Instance(this.construct, id, {
+        vpc: this.vpc,
+        instanceType: InstanceType.of(InstanceClass.T2, InstanceSize.MICRO),
+        machineImage: ami,
+      });
     });
   }
 }
