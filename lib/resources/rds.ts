@@ -6,6 +6,10 @@ import {
   Vpc,
 } from 'aws-cdk-lib/aws-ec2';
 import {
+  AuroraMysqlEngineVersion,
+  Credentials,
+  DatabaseCluster,
+  DatabaseClusterEngine,
   DatabaseInstance,
   DatabaseInstanceEngine,
   MysqlEngineVersion,
@@ -24,6 +28,7 @@ export class RDSResource {
 
   createDBInstance(): DatabaseInstance {
     const rdsInstance = new DatabaseInstance(this.construct, 'Gp3Instance', {
+      deletionProtection: false,
       engine: DatabaseInstanceEngine.mysql({
         version: MysqlEngineVersion.VER_8_0_30,
       }),
@@ -34,10 +39,30 @@ export class RDSResource {
       allocatedStorage: 500,
       storageType: StorageType.STANDARD,
       instanceType: InstanceType.of(
-        InstanceClass.BURSTABLE3,
-        InstanceSize.NANO
+        InstanceClass.BURSTABLE4_GRAVITON,
+        InstanceSize.MICRO
       ),
     });
     return rdsInstance;
+  }
+
+  createDBCluster(): DatabaseCluster {
+    const cluster = new DatabaseCluster(this.construct, 'Database', {
+      deletionProtection: false,
+      engine: DatabaseClusterEngine.auroraMysql({
+        version: AuroraMysqlEngineVersion.VER_2_10_3,
+      }),
+      instanceProps: {
+        instanceType: InstanceType.of(
+          InstanceClass.BURSTABLE3,
+          InstanceSize.SMALL
+        ),
+        vpcSubnets: {
+          subnetType: SubnetType.PRIVATE_ISOLATED,
+        },
+        vpc: this.vpc,
+      },
+    });
+    return cluster;
   }
 }
