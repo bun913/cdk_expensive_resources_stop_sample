@@ -51,10 +51,9 @@ export class StepFunc {
         action: 'describeInstances',
         iamResources: ['*'],
         resultSelector: {
-          'InstanceIDs.$':
-            '$.Reservations[*].Instances[?(@.State.Code == 16)].InstanceId',
+          'InstanceIDs.$': '$.Reservations[*].Instances[*].InstanceId',
           'length.$':
-            'States.ArrayLength($.Reservations[*].Instances[?(@.State.Code == 16)].InstanceId)',
+            'States.ArrayLength($.Reservations[*].Instances[*].InstanceId)',
         },
         parameters: {
           Filters: [
@@ -129,7 +128,6 @@ export class StepFunc {
   }
 
   private getDBClusterStep(): sfn.Chain {
-    // 並行処理3: DB Clusterの削除
     const clusterDescribe = new tasks.CallAwsService(
       this.construct,
       'Describe DBClusters',
